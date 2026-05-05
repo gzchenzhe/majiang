@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="麻将记分">
+<meta name="theme-color" content="#8B0000">
+<title>麻将记分</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzhCMDAwMCIgcng9IjMwIi8+PHRleHQgeD0iOTAiIHk9IjEyMCIgZm9udC1zaXplPSI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI0ZGRDcwMCIgZm9udC1mYW1pbHk9InNlcmlmIj7kuK08L3RleHQ+PC9zdmc+">
+<link rel="manifest" href='data:application/manifest+json,{"name":"麻将记分","short_name":"麻将","start_url":".","display":"standalone","background_color":"%238B0000","theme_color":"%238B0000","icons":[{"src":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzhCMDAwMCIgcng9IjMwIi8+PHRleHQgeD0iOTAiIHk9IjEyMCIgZm9udC1zaXplPSI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI0ZGRDcwMCIgZm9udC1mYW1pbHk9InNlcmlmIj7kuK08L3RleHQ+PC9zdmc+","sizes":"180x180","type":"image/svg+xml"}]}'>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --primary: #8B0000;
+  --primary-light: #B22222;
+  --gold: #FFD700;
+  --gold-dark: #DAA520;
+  --bg: #FAF7F2;
+  --bg-card: #FFFFFF;
+  --text: #2C1810;
+  --text-light: #6B5D54;
+  --border: #E5DDD3;
+  --success: #2E7D32;
+  --danger: #C62828;
+  --warn: #EF6C00;
+  --shadow: 0 2px 8px rgba(139,0,0,0.08);
+  --shadow-lg: 0 4px 16px rgba(139,0,0,0.12);
+}
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative;
+  min-height: 100vh;
+}
+
+/* 顶部头部 */
+.header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: white;
+  padding: 16px 18px 14px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow);
+}
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.header-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.header-date {
+  font-size: 13px;
+  opacity: 0.9;
+}
+.fortune-card {
+  background: rgba(255,215,0,0.15);
+  border: 1px solid rgba(255,215,0,0.4);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.fortune-label { font-size: 13px; opacity: 0.85; }
+.fortune-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 2px;
+}
+.fortune-detail {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+/* 主内容 */
+.main {
+  flex: 1;
+  padding: 14px 14px 80px;
+  overflow-y: auto;
+}
+.page { display: none; }
+.page.active { display: block; animation: fadeIn 0.2s; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 卡片 */
+.card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text);
+}
+.card-title .accent {
+  color: var(--primary);
+  font-size: 14px;
+}
+
+/* 统计大数字 */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.stat-grid.three { grid-template-columns: repeat(3, 1fr); }
+.stat-item {
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+}
+.stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+.stat-value.win { color: var(--success); }
+.stat-value.loss { color: var(--danger); }
+.stat-label {
+  font-size: 12px;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+
+/* 按钮 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  background: var(--primary);
+  color: white;
+  transition: all 0.15s;
+  font-family: inherit;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.btn:active { transform: scale(0.97); opacity: 0.85; }
+.btn-block { width: 100%; }
+.btn-lg { padding: 14px 18px; font-size: 16px; }
+.btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+.btn-gold { background: var(--gold-dark); color: white; }
+.btn-danger { background: var(--danger); }
+.btn-success { background: var(--success); }
+.btn-row {
+  display: flex;
+  gap: 10px;
+}
+.btn-row > .btn { flex: 1; }
+
+/* 表单 */
+.form-row {
+  margin-bottom: 14px;
+}
+.form-label {
+  font-size: 13px;
+  color: var(--text-light);
+  margin-bottom: 6px;
+  display: block;
+}
+.input, .select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 16px;
+  background: white;
+  font-family: inherit;
+  color: var(--text);
+}
+.input:focus, .select:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* 玩家选择 */
+.player-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+.player-chip {
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  text-align: center;
+  font-size: 14px;
+  cursor: pointer;
+  background: white;
+  transition: all 0.15s;
+  position: relative;
+  user-select: none;
+}
+.player-chip.selected {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+.player-chip.me {
+  border-color: var(--gold-dark);
+  border-width: 2px;
+}
+.player-chip.me::before {
+  content: '我';
+  position: absolute;
+  top: -8px;
+  right: -4px;
+  background: var(--gold-dark);
+  color: white;
+  font-size: 11px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 方位选择（2x2格） */
+.position-board {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 6px;
+  background: var(--bg);
+  padding: 10px;
+  border-radius: 12px;
+  aspect-ratio: 1;
+  max-width: 320px;
+  margin: 10px auto;
+}
+.position-cell {
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  cursor: pointer;
+  position: relative;
+  text-align: center;
+  padding: 4px;
+}
+.position-cell.center {
+  background: var(--bg);
+  border: none;
+  cursor: default;
+  font-size: 18px;
+  color: var(--gold-dark);
+  font-weight: 700;
+}
+.position-cell.fortune {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  border-color: #FFA500;
+  color: white;
+}
+.position-cell .label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.position-cell .name {
+  font-size: 13px;
+  color: var(--text-light);
+  font-weight: 500;
+}
+.position-cell .amount {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+.position-cell.assigned {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+.position-cell.assigned .name { color: white; }
+.position-cell.fortune.assigned {
+  background: linear-gradient(135deg, #B22222, #8B0000);
+}
+
+/* 列表项 */
+.list-item {
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow);
+}
+.list-item-main {
+  flex: 1;
+}
+.list-item-title {
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 3px;
+}
+.list-item-sub {
+  font-size: 12px;
+  color: var(--text-light);
+}
+.list-item-value {
+  font-size: 17px;
+  font-weight: 700;
+  margin-left: 10px;
+}
+.list-item-value.win { color: var(--success); }
+.list-item-value.loss { color: var(--danger); }
+
+/* Tab 栏 */
+.tabbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid var(--border);
+  display: flex;
+  z-index: 100;
+  max-width: 600px;
+  margin: 0 auto;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.tab {
+  flex: 1;
+  padding: 8px 0 6px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.tab .icon {
+  font-size: 22px;
+  display: block;
+  margin-bottom: 2px;
+  line-height: 1;
+}
+.tab.active {
+  color: var(--primary);
+}
+
+/* 弹窗 */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 200;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal.show { display: flex; }
+.modal-content {
+  background: white;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 20px 20px 0 0;
+  padding: 20px 18px 30px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.25s;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* 空状态 */
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-light);
+  font-size: 14px;
+}
+.empty .emoji { font-size: 40px; margin-bottom: 12px; display:block; }
+
+/* 玩家管理列表 */
+.player-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.player-row:last-child { border-bottom: none; }
+.player-name { flex: 1; font-size: 15px; }
+.player-actions { display: flex; gap: 6px; }
+
+/* 月份切换 */
+.month-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: var(--bg-card);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.month-switch .arrow {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  user-select: none;
+}
+.month-switch .arrow:active { background: var(--bg); }
+.month-switch .label {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* 钱数输入框增减按钮 */
+.amount-input-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.amount-input-group .input {
+  flex: 1;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 600;
+}
+.step-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  font-family: inherit;
+}
+.step-btn:active { background: var(--border); }
+
+/* 圆形按钮 */
+.fab {
+  position: fixed;
+  right: 20px;
+  bottom: 80px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  font-size: 28px;
+  border: none;
+  box-shadow: var(--shadow-lg);
+  z-index: 90;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+.fab:active { transform: scale(0.95); }
+
+/* 推荐结果卡 */
+.recommend-card {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: white;
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-lg);
+}
+.recommend-card .label { font-size: 13px; opacity: 0.9; }
+.recommend-card .position {
+  font-size: 38px;
+  font-weight: 700;
+  margin: 8px 0;
+  letter-spacing: 4px;
+}
+.recommend-card .rate {
+  font-size: 16px;
+  font-weight: 600;
+}
+.recommend-card .meta {
+  font-size: 12px;
+  opacity: 0.85;
+  margin-top: 6px;
+}
+
+/* 表格 */
+.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.tbl th, .tbl td {
+  padding: 8px 6px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+.tbl th {
+  font-weight: 600;
+  color: var(--text-light);
+  font-size: 12px;
+  background: var(--bg);
+}
+.tbl td.win { color: var(--success); font-weight: 600; }
+.tbl td.loss { color: var(--danger); font-weight: 600; }
+
+/* 滑块 */
+.tabs-inline {
+  display: flex;
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 12px;
+}
+.tabs-inline .pill {
+  flex: 1;
+  text-align: center;
+  padding: 8px;
+  font-size: 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  color: var(--text-light);
+}
+.tabs-inline .pill.active {
+  background: white;
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: var(--shadow);
+}
+
+/* 提示信息 */
+.toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.8);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  z-index: 9999;
+  display: none;
+}
+.toast.show { display: block; animation: fadeIn 0.2s; }
+
+/* 安全区 */
+.safe-bottom { height: env(safe-area-inset-bottom, 0); }
+
+/* 图表容器 */
+.chart-container {
+  position: relative;
+  height: 220px;
+  margin-top: 8px;
+}
+
+/* 玩家详情子表 */
+.player-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.player-stat-row:last-child { border-bottom: none; }
+.player-stat-name { font-size: 14px; font-weight: 500; }
+.player-stat-meta { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+.player-stat-value { font-size: 16px; font-weight: 700; }
+
+/* 注释和小提示 */
+.note {
+  font-size: 12px;
+  color: var(--text-light);
+  padding: 8px 10px;
+  background: var(--bg);
+  border-radius: 8px;
+  border-left: 3px solid var(--gold-dark);
+  margin: 8px 0;
+}
+
+/* 圆形进度（用于胜率） */
+.circle-bar {
+  display: inline-block;
+  width: 60px;
+  height: 60px;
+  position: relative;
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-row">
+    <div>
+      <div class="header-title">🀄️ 麻将记分</div>
+      <div class="header-date" id="todayDate"></div>
+    </div>
+  </div>
+  <div class="fortune-card">
+    <div>
+      <div class="fortune-label">今日财神方位</div>
+      <div class="fortune-detail" id="todayGanzhi"></div>
+    </div>
+    <div class="fortune-value" id="fortuneDir">—</div>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- 首页 -->
+  <section class="page active" id="page-home">
+    <div class="card">
+      <div class="card-title">
+        本月概况
+        <span class="accent" id="thisMonthLabel"></span>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-item">
+          <div class="stat-value" id="monthTotal">0</div>
+          <div class="stat-label">月总输赢（元）</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="monthSessions">0</div>
+          <div class="stat-label">总场次</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="monthWinRate">0%</div>
+          <div class="stat-label">胜率</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="monthBest">0</div>
+          <div class="stat-label">单场最高</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">今日记录 <span class="accent" id="todayCount">0 场</span></div>
+      <div id="todayList"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">快速入口</div>
+      <div class="btn-row">
+        <button class="btn" onclick="switchTab('record')">+ 录入新场</button>
+        <button class="btn btn-gold" onclick="switchTab('analyze')">智能推荐</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 录入页 -->
+  <section class="page" id="page-record">
+    <div class="card">
+      <div class="card-title">录入一场牌</div>
+      <div class="form-row">
+        <label class="form-label">日期</label>
+        <input type="date" class="input" id="recordDate">
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">选择 4 位玩家（含自己）</label>
+        <div class="player-grid" id="recordPlayers"></div>
+        <div class="note" id="playerSelectHint" style="display:none">提示：请到"我的"页面先添加玩家</div>
+      </div>
+
+      <div class="form-row" id="positionSection" style="display:none">
+        <label class="form-label">点击空位，安排玩家就坐（金黄色为今日财位）</label>
+        <div class="position-board" id="positionBoard">
+          <div class="position-cell" data-pos="NW"></div>
+          <div class="position-cell" data-pos="N"><span class="label">北</span></div>
+          <div class="position-cell" data-pos="NE"></div>
+          <div class="position-cell" data-pos="W"><span class="label">西</span></div>
+          <div class="position-cell center">中</div>
+          <div class="position-cell" data-pos="E"><span class="label">东</span></div>
+          <div class="position-cell" data-pos="SW"></div>
+          <div class="position-cell" data-pos="S"><span class="label">南</span></div>
+          <div class="position-cell" data-pos="SE"></div>
+        </div>
+        <div class="note">说明：传统麻将四人坐"东南西北"四正位。角位（东南、东北、西南、西北）保留显示财位但不分配玩家。</div>
+      </div>
+
+      <div class="form-row" id="amountSection" style="display:none">
+        <label class="form-label">输入每人这场的输赢（赢用正数，输用负数，元）</label>
+        <div id="amountList"></div>
+        <div class="note" id="balanceTip">总和应为 0（4人输赢相抵）</div>
+      </div>
+
+      <button class="btn btn-block btn-lg" id="saveBtn" onclick="saveSession()" style="display:none">保存这场</button>
+    </div>
+  </section>
+
+  <!-- 历史记录 -->
+  <section class="page" id="page-history">
+    <div class="month-switch">
+      <div class="arrow" onclick="changeMonth(-1)">‹</div>
+      <div class="label" id="historyMonthLabel"></div>
+      <div class="arrow" onclick="changeMonth(1)">›</div>
+    </div>
+    <div class="card">
+      <div class="stat-grid three">
+        <div class="stat-item">
+          <div class="stat-value" id="histTotal">0</div>
+          <div class="stat-label">总输赢</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="histSessions">0</div>
+          <div class="stat-label">场次</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="histWinRate">0%</div>
+          <div class="stat-label">胜率</div>
+        </div>
+      </div>
+    </div>
+    <div id="historyList"></div>
+  </section>
+
+  <!-- 统计页 -->
+  <section class="page" id="page-stats">
+    <div class="tabs-inline">
+      <div class="pill active" onclick="setStatRange('month', this)">本月</div>
+      <div class="pill" onclick="setStatRange('all', this)">全部</div>
+      <div class="pill" onclick="setStatRange('30', this)">近30天</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">月度趋势</div>
+      <div class="chart-container"><canvas id="trendChart"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">各方位胜率</div>
+      <div class="chart-container"><canvas id="positionChart"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">玩家输赢统计</div>
+      <div id="playerStats"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">上下家分析</div>
+      <div class="note">分析当某玩家是我上家/下家/对家时，我的胜率与平均输赢</div>
+      <div id="neighborStats"></div>
+    </div>
+  </section>
+
+  <!-- 智能推荐 -->
+  <section class="page" id="page-analyze">
+    <div class="card">
+      <div class="card-title">智能座位推荐</div>
+      <div class="form-row">
+        <label class="form-label">选择今天的 3 位对手</label>
+        <div class="player-grid" id="analyzePlayers"></div>
+      </div>
+      <button class="btn btn-block btn-lg" onclick="analyzeRecommend()">分析最佳座位</button>
+    </div>
+    <div id="recommendResult"></div>
+  </section>
+
+  <!-- 我的（设置） -->
+  <section class="page" id="page-me">
+    <div class="card">
+      <div class="card-title">我的信息</div>
+      <div class="form-row">
+        <label class="form-label">我的称呼</label>
+        <input class="input" id="meName" placeholder="例如：阿明">
+      </div>
+      <button class="btn btn-success" onclick="saveMe()">保存</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">玩家库 <span class="accent" id="playerCount"></span></div>
+      <div class="form-row">
+        <div style="display:flex; gap:8px">
+          <input class="input" id="newPlayerName" placeholder="输入玩家姓名">
+          <button class="btn" onclick="addPlayer()">添加</button>
+        </div>
+      </div>
+      <div id="playerListSettings"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">财位算法</div>
+      <div class="note">财位歌诀：甲乙日东北 / 丙丁日正西 / 戊己日正北 / 庚辛日正东 / 壬癸日正南</div>
+      <div class="form-row">
+        <label class="form-label">基准日（用于校准干支）</label>
+        <input type="date" class="input" id="ganzhiBaseDate">
+      </div>
+      <div class="form-row">
+        <label class="form-label">该日的天干</label>
+        <select class="select" id="ganzhiBaseStem">
+          <option value="0">甲</option><option value="1">乙</option><option value="2">丙</option>
+          <option value="3">丁</option><option value="4">戊</option><option value="5">己</option>
+          <option value="6">庚</option><option value="7">辛</option><option value="8">壬</option>
+          <option value="9">癸</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">该日的地支</label>
+        <select class="select" id="ganzhiBaseBranch">
+          <option value="0">子</option><option value="1">丑</option><option value="2">寅</option>
+          <option value="3">卯</option><option value="4">辰</option><option value="5">巳</option>
+          <option value="6">午</option><option value="7">未</option><option value="8">申</option>
+          <option value="9">酉</option><option value="10">戌</option><option value="11">亥</option>
+        </select>
+      </div>
+      <button class="btn" onclick="saveGanzhiBase()">保存基准</button>
+      <div class="note">如果你查询黄历发现财位与显示不一致，请把"该日的天干地支"调整为黄历显示的当日干支后保存。</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">数据备份</div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="exportData()">导出备份</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">导入备份</button>
+      </div>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      <div style="height:10px"></div>
+      <button class="btn btn-danger btn-block" onclick="clearAllData()">清空所有数据</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">使用说明</div>
+      <div style="font-size:13px; line-height:1.7; color:var(--text-light)">
+        ① 在"我的"页面先添加你常打牌的朋友，并设置自己的称呼；<br>
+        ② 录入：选 4 个玩家 → 在方位棋盘上点击空位安排座位 → 输入每人输赢；<br>
+        ③ 智能推荐：选 3 个对手，系统根据历史数据告诉你坐哪个位置胜率最高；<br>
+        ④ 数据存在浏览器本地，建议定期导出备份；<br>
+        ⑤ <strong>iPhone 使用：</strong>用 Safari 打开本页 → 点底部「分享」按钮 → 选「添加到主屏幕」，桌面就会出现图标，使用体验和 App 一样。
+      </div>
+    </div>
+
+    <div style="height:30px"></div>
+  </section>
+
+</main>
+
+<nav class="tabbar">
+  <div class="tab active" data-tab="home" onclick="switchTab('home')"><span class="icon">🏠</span>首页</div>
+  <div class="tab" data-tab="record" onclick="switchTab('record')"><span class="icon">✏️</span>录入</div>
+  <div class="tab" data-tab="history" onclick="switchTab('history')"><span class="icon">📋</span>记录</div>
+  <div class="tab" data-tab="stats" onclick="switchTab('stats')"><span class="icon">📊</span>统计</div>
+  <div class="tab" data-tab="analyze" onclick="switchTab('analyze')"><span class="icon">🎯</span>推荐</div>
+  <div class="tab" data-tab="me" onclick="switchTab('me')"><span class="icon">👤</span>我的</div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// ========== 数据层 ==========
+const STORAGE_KEY = 'mahjong_tracker_v1';
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultData();
+    const d = JSON.parse(raw);
+    return Object.assign(defaultData(), d);
+  } catch (e) {
+    return defaultData();
+  }
+}
+function defaultData() {
+  return {
+    me: { name: '我' },
+    players: [],
+    sessions: [],
+    ganzhiBase: { date: '2026-05-06', stemIndex: 4, branchIndex: 4 } // 戊辰 - 用户可校准
+  };
+}
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+let state = loadData();
+
+// ========== 干支与财位 ==========
+const STEMS = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+const BRANCHES = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+// 财神方位（按日干）：甲乙→东北，丙丁→正西，戊己→正北，庚辛→正东，壬癸→正南
+const FORTUNE_BY_STEM = ['东北','东北','正西','正西','正北','正北','正东','正东','正南','正南'];
+const FORTUNE_DIR_TO_POS = { '正东': 'E', '正南': 'S', '正西': 'W', '正北': 'N', '东北':'NE','东南':'SE','西南':'SW','西北':'NW' };
+
+function calcGanzhi(date) {
+  const base = state.ganzhiBase;
+  const baseDate = new Date(base.date + 'T00:00:00');
+  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const days = Math.round((target - baseDate) / 86400000);
+  const stem = ((base.stemIndex + days) % 10 + 10) % 10;
+  const branch = ((base.branchIndex + days) % 12 + 12) % 12;
+  return { stem, branch, name: STEMS[stem] + BRANCHES[branch] };
+}
+
+function getTodayFortune(date) {
+  const gz = calcGanzhi(date || new Date());
+  return { ...gz, fortune: FORTUNE_BY_STEM[gz.stem] };
+}
+
+// ========== UI 状态 ==========
+let recordState = {
+  date: new Date().toISOString().slice(0, 10),
+  selectedPlayerIds: [], // 至多4人，含'me'
+  positions: {}, // playerId -> 'E'/'S'/'W'/'N'
+  amounts: {}, // playerId -> number
+};
+
+let historyMonth = (function(){
+  const d = new Date();
+  return { y: d.getFullYear(), m: d.getMonth() }; // m: 0-11
+})();
+
+let statRange = 'month';
+
+// 我的虚拟ID
+const ME_ID = '__me__';
+
+// ========== 通用工具 ==========
+function $(id) { return document.getElementById(id); }
+function showToast(msg) {
+  const el = $('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => el.classList.remove('show'), 1800);
+}
+function fmtMoney(n) {
+  if (n > 0) return '+' + n;
+  return '' + n;
+}
+function fmtDate(s) {
+  const d = new Date(s);
+  return `${d.getMonth()+1}月${d.getDate()}日`;
+}
+function getPlayerName(pid) {
+  if (pid === ME_ID) return state.me.name || '我';
+  const p = state.players.find(x => x.id === pid);
+  return p ? p.name : '未知';
+}
+function genId() { return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+// ========== Tab 切换 ==========
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + name));
+  if (name === 'home') renderHome();
+  if (name === 'record') renderRecordPage();
+  if (name === 'history') renderHistory();
+  if (name === 'stats') renderStats();
+  if (name === 'analyze') renderAnalyzePage();
+  if (name === 'me') renderMePage();
+  window.scrollTo(0, 0);
+}
+
+// ========== 顶部头信息 ==========
+function renderHeader() {
+  const now = new Date();
+  const wk = ['日','一','二','三','四','五','六'][now.getDay()];
+  $('todayDate').textContent = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 周${wk}`;
+  const f = getTodayFortune(now);
+  $('todayGanzhi').textContent = `今日：${f.name}日`;
+  $('fortuneDir').textContent = f.fortune;
+}
+
+// ========== 首页 ==========
+function renderHome() {
+  renderHeader();
+  const now = new Date();
+  $('thisMonthLabel').textContent = `${now.getFullYear()}年${now.getMonth()+1}月`;
+
+  const mySess = state.sessions.filter(s => {
+    const d = new Date(s.date);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  });
+  let total = 0, wins = 0, best = 0;
+  mySess.forEach(s => {
+    const my = s.records.find(r => r.playerId === ME_ID);
+    if (!my) return;
+    total += my.amount;
+    if (my.amount > 0) wins++;
+    if (my.amount > best) best = my.amount;
+  });
+  $('monthTotal').textContent = fmtMoney(total);
+  $('monthTotal').className = 'stat-value ' + (total > 0 ? 'win' : total < 0 ? 'loss' : '');
+  $('monthSessions').textContent = mySess.length;
+  $('monthWinRate').textContent = mySess.length ? Math.round(wins / mySess.length * 100) + '%' : '0%';
+  $('monthBest').textContent = '+' + best;
+  $('monthBest').className = 'stat-value win';
+
+  // 今日列表
+  const todayStr = now.toISOString().slice(0, 10);
+  const todaySess = state.sessions.filter(s => s.date === todayStr);
+  $('todayCount').textContent = `${todaySess.length} 场`;
+  const list = $('todayList');
+  if (todaySess.length === 0) {
+    list.innerHTML = '<div class="empty"><span class="emoji">🀄️</span>今日还没有记录，点击下方按钮开始</div>';
+  } else {
+    list.innerHTML = todaySess.map(s => {
+      const my = s.records.find(r => r.playerId === ME_ID);
+      const amt = my ? my.amount : 0;
+      const others = s.records.filter(r => r.playerId !== ME_ID).map(r => `${getPlayerName(r.playerId)} ${fmtMoney(r.amount)}`).join('，');
+      return `<div class="list-item" onclick="showSessionDetail('${s.id}')">
+        <div class="list-item-main">
+          <div class="list-item-title">第${todaySess.indexOf(s)+1}场 · 我${my && my.position ? '坐'+posLabel(my.position) : ''}</div>
+          <div class="list-item-sub">${others}</div>
+        </div>
+        <div class="list-item-value ${amt>0?'win':amt<0?'loss':''}">${fmtMoney(amt)}</div>
+      </div>`;
+    }).join('');
+  }
+}
+function posLabel(p) {
+  return ({E:'东',S:'南',W:'西',N:'北'})[p] || p;
+}
+
+// ========== 录入页 ==========
+function renderRecordPage() {
+  $('recordDate').value = recordState.date;
+  $('recordDate').onchange = e => { recordState.date = e.target.value; };
+  renderPlayerSelect();
+  renderPositionBoard();
+  renderAmountList();
+  updateSaveBtn();
+}
+
+function renderPlayerSelect() {
+  const grid = $('recordPlayers');
+  // me + players
+  const all = [{ id: ME_ID, name: state.me.name || '我', isMe: true }].concat(state.players);
+  if (state.players.length === 0) {
+    $('playerSelectHint').style.display = 'block';
+  } else {
+    $('playerSelectHint').style.display = 'none';
+  }
+  grid.innerHTML = all.map(p => {
+    const sel = recordState.selectedPlayerIds.includes(p.id);
+    return `<div class="player-chip ${sel?'selected':''} ${p.isMe?'me':''}" onclick="togglePlayer('${p.id}')">${p.name}</div>`;
+  }).join('');
+}
+
+function togglePlayer(pid) {
+  const idx = recordState.selectedPlayerIds.indexOf(pid);
+  if (idx >= 0) {
+    recordState.selectedPlayerIds.splice(idx, 1);
+    delete recordState.positions[pid];
+    delete recordState.amounts[pid];
+  } else {
+    if (recordState.selectedPlayerIds.length >= 4) {
+      showToast('最多 4 人');
+      return;
+    }
+    recordState.selectedPlayerIds.push(pid);
+  }
+  renderPlayerSelect();
+  $('positionSection').style.display = recordState.selectedPlayerIds.length === 4 ? 'block' : 'none';
+  renderPositionBoard();
+  renderAmountList();
+  updateSaveBtn();
+}
+
+function renderPositionBoard() {
+  // 标记今日财位
+  const f = getTodayFortune(new Date(recordState.date));
+  const fpos = FORTUNE_DIR_TO_POS[f.fortune];
+  document.querySelectorAll('.position-cell').forEach(cell => {
+    cell.classList.remove('fortune', 'assigned');
+    if (cell.dataset.pos === fpos) cell.classList.add('fortune');
+  });
+  // 渲染已分配
+  document.querySelectorAll('.position-cell[data-pos]').forEach(cell => {
+    const pos = cell.dataset.pos;
+    if (!['E','S','W','N'].includes(pos)) return;
+    const pid = Object.keys(recordState.positions).find(k => recordState.positions[k] === pos);
+    cell.innerHTML = `<span class="label">${posLabel(pos)}</span>` +
+      (pid ? `<span class="name">${getPlayerName(pid)}</span>` : '');
+    if (pid) cell.classList.add('assigned');
+    cell.onclick = () => onPositionClick(pos);
+  });
+}
+
+function onPositionClick(pos) {
+  // 只允许4正位
+  if (!['E','S','W','N'].includes(pos)) return;
+  if (recordState.selectedPlayerIds.length < 4) {
+    showToast('请先选满 4 位玩家');
+    return;
+  }
+  // 弹窗选玩家
+  const unassigned = recordState.selectedPlayerIds.filter(pid => !recordState.positions[pid] || recordState.positions[pid] === pos);
+  // 但允许覆盖
+  showSelectPlayerForPosition(pos);
+}
+
+function showSelectPlayerForPosition(pos) {
+  // 简单实现：弹窗
+  const body = recordState.selectedPlayerIds.map(pid => {
+    const cur = recordState.positions[pid];
+    let label = getPlayerName(pid);
+    if (cur && cur !== pos) label += ` (现坐${posLabel(cur)})`;
+    if (cur === pos) label += ' ✓';
+    return `<button class="btn btn-secondary btn-block" style="margin-bottom:8px" onclick="assignPosition('${pid}','${pos}')">${label}</button>`;
+  }).join('');
+  showModal(`安排坐${posLabel(pos)}的玩家`, body + `<button class="btn btn-secondary btn-block" onclick="clearPosition('${pos}')">清空此位置</button>`);
+}
+
+function assignPosition(pid, pos) {
+  // 该 pos 原本的玩家清空，该 pid 原本的位置清空
+  Object.keys(recordState.positions).forEach(k => {
+    if (recordState.positions[k] === pos) delete recordState.positions[k];
+  });
+  recordState.positions[pid] = pos;
+  closeModal();
+  renderPositionBoard();
+  renderAmountList();
+  updateSaveBtn();
+}
+
+function clearPosition(pos) {
+  Object.keys(recordState.positions).forEach(k => {
+    if (recordState.positions[k] === pos) delete recordState.positions[k];
+  });
+  closeModal();
+  renderPositionBoard();
+  updateSaveBtn();
+}
+
+function renderAmountList() {
+  if (recordState.selectedPlayerIds.length !== 4 || Object.keys(recordState.positions).length !== 4) {
+    $('amountSection').style.display = 'none';
+    return;
+  }
+  $('amountSection').style.display = 'block';
+  const ordered = ['E','S','W','N'].map(pos => {
+    return Object.keys(recordState.positions).find(k => recordState.positions[k] === pos);
+  });
+  $('amountList').innerHTML = ordered.map((pid, i) => {
+    const pos = ['E','S','W','N'][i];
+    const v = recordState.amounts[pid] !== undefined ? recordState.amounts[pid] : '';
+    return `<div class="form-row">
+      <label class="form-label">${posLabel(pos)} · ${getPlayerName(pid)}</label>
+      <div class="amount-input-group">
+        <button class="step-btn" onclick="adjustAmount('${pid}',-10)">-10</button>
+        <input class="input" type="number" inputmode="numeric" value="${v}" placeholder="0" oninput="setAmount('${pid}',this.value)">
+        <button class="step-btn" onclick="adjustAmount('${pid}',10)">+10</button>
+      </div>
+    </div>`;
+  }).join('');
+  updateBalanceTip();
+}
+
+function setAmount(pid, val) {
+  const n = parseFloat(val);
+  if (isNaN(n)) {
+    delete recordState.amounts[pid];
+  } else {
+    recordState.amounts[pid] = n;
+  }
+  updateBalanceTip();
+  updateSaveBtn();
+}
+function adjustAmount(pid, delta) {
+  const cur = recordState.amounts[pid] || 0;
+  recordState.amounts[pid] = cur + delta;
+  renderAmountList();
+}
+function updateBalanceTip() {
+  const ids = recordState.selectedPlayerIds;
+  let sum = 0, count = 0;
+  ids.forEach(id => {
+    if (recordState.amounts[id] !== undefined) {
+      sum += recordState.amounts[id];
+      count++;
+    }
+  });
+  const tip = $('balanceTip');
+  if (count < 4) {
+    tip.textContent = `已填 ${count}/4 人，总和应为 0`;
+    tip.style.borderLeftColor = 'var(--gold-dark)';
+  } else if (sum === 0) {
+    tip.textContent = '✓ 总和为 0，可以保存';
+    tip.style.borderLeftColor = 'var(--success)';
+  } else {
+    tip.textContent = `总和不为 0（当前 ${fmtMoney(sum)}），请检查`;
+    tip.style.borderLeftColor = 'var(--danger)';
+  }
+}
+function updateSaveBtn() {
+  const ok = recordState.selectedPlayerIds.length === 4 &&
+             Object.keys(recordState.positions).length === 4 &&
+             recordState.selectedPlayerIds.every(id => recordState.amounts[id] !== undefined) &&
+             recordState.selectedPlayerIds.reduce((s,id) => s + recordState.amounts[id], 0) === 0;
+  $('saveBtn').style.display = ok ? 'block' : 'none';
+}
+
+function saveSession() {
+  const sess = {
+    id: 's' + Date.now().toString(36) + Math.random().toString(36).slice(2,5),
+    date: recordState.date,
+    createdAt: Date.now(),
+    records: recordState.selectedPlayerIds.map(pid => ({
+      playerId: pid,
+      position: recordState.positions[pid],
+      amount: recordState.amounts[pid]
+    }))
+  };
+  state.sessions.push(sess);
+  saveData();
+  showToast('已保存');
+  // 重置
+  recordState = {
+    date: new Date().toISOString().slice(0, 10),
+    selectedPlayerIds: [],
+    positions: {},
+    amounts: {}
+  };
+  switchTab('home');
+}
+
+// ========== 历史记录 ==========
+function changeMonth(delta) {
+  let m = historyMonth.m + delta;
+  let y = historyMonth.y;
+  if (m < 0) { m = 11; y--; }
+  if (m > 11) { m = 0; y++; }
+  historyMonth = { y, m };
+  renderHistory();
+}
+function renderHistory() {
+  $('historyMonthLabel').textContent = `${historyMonth.y}年${historyMonth.m+1}月`;
+  const sessions = state.sessions.filter(s => {
+    const d = new Date(s.date);
+    return d.getFullYear() === historyMonth.y && d.getMonth() === historyMonth.m;
+  }).sort((a,b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt);
+
+  let total = 0, wins = 0;
+  sessions.forEach(s => {
+    const my = s.records.find(r => r.playerId === ME_ID);
+    if (my) {
+      total += my.amount;
+      if (my.amount > 0) wins++;
+    }
+  });
+  $('histTotal').textContent = fmtMoney(total);
+  $('histTotal').className = 'stat-value ' + (total > 0 ? 'win' : total < 0 ? 'loss' : '');
+  $('histSessions').textContent = sessions.length;
+  $('histWinRate').textContent = sessions.length ? Math.round(wins / sessions.length * 100) + '%' : '0%';
+
+  const list = $('historyList');
+  if (sessions.length === 0) {
+    list.innerHTML = '<div class="empty"><span class="emoji">📭</span>本月暂无记录</div>';
+    return;
+  }
+  // 按日期分组
+  const grouped = {};
+  sessions.forEach(s => {
+    if (!grouped[s.date]) grouped[s.date] = [];
+    grouped[s.date].push(s);
+  });
+  list.innerHTML = Object.keys(grouped).sort().reverse().map(date => {
+    let dayTotal = 0;
+    grouped[date].forEach(s => {
+      const my = s.records.find(r => r.playerId === ME_ID);
+      if (my) dayTotal += my.amount;
+    });
+    return `<div class="card" style="padding:14px">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+        <div style="font-weight:600; font-size:14px">${fmtDate(date)}</div>
+        <div style="font-weight:700; color:${dayTotal>0?'var(--success)':dayTotal<0?'var(--danger)':'var(--text)'}">${fmtMoney(dayTotal)}（${grouped[date].length}场）</div>
+      </div>
+      ${grouped[date].map((s, idx) => {
+        const my = s.records.find(r => r.playerId === ME_ID);
+        const amt = my ? my.amount : 0;
+        const others = s.records.filter(r => r.playerId !== ME_ID).map(r => `${getPlayerName(r.playerId)}(${posLabel(r.position)}) ${fmtMoney(r.amount)}`).join(' · ');
+        return `<div class="list-item" style="margin-bottom:6px; box-shadow:none; background:var(--bg)" onclick="showSessionDetail('${s.id}')">
+          <div class="list-item-main">
+            <div class="list-item-title">第${idx+1}场 · 我${my && my.position?'坐'+posLabel(my.position):''}</div>
+            <div class="list-item-sub" style="margin-top:4px">${others}</div>
+          </div>
+          <div class="list-item-value ${amt>0?'win':amt<0?'loss':''}">${fmtMoney(amt)}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
+function showSessionDetail(sid) {
+  const s = state.sessions.find(x => x.id === sid);
+  if (!s) return;
+  const f = getTodayFortune(new Date(s.date));
+  const positions = ['E','S','W','N'].map(p => {
+    const r = s.records.find(x => x.position === p);
+    if (!r) return '';
+    return `<div class="player-stat-row"><div><div class="player-stat-name">${posLabel(p)} · ${getPlayerName(r.playerId)}</div></div><div class="player-stat-value ${r.amount>0?'':r.amount<0?'loss':''}" style="color:${r.amount>0?'var(--success)':r.amount<0?'var(--danger)':''}">${fmtMoney(r.amount)}</div></div>`;
+  }).join('');
+  showModal(`${fmtDate(s.date)} 这场`, `
+    <div class="note">当日财位：${f.fortune}（${f.name}日）</div>
+    ${positions}
+    <div style="height:14px"></div>
+    <button class="btn btn-danger btn-block" onclick="deleteSession('${sid}')">删除这场</button>
+  `);
+}
+function deleteSession(sid) {
+  if (!confirm('确认删除这场记录？无法恢复')) return;
+  state.sessions = state.sessions.filter(s => s.id !== sid);
+  saveData();
+  closeModal();
+  showToast('已删除');
+  renderHistory();
+  renderHome();
+}
+
+// ========== 统计 ==========
+let trendChart = null, positionChart = null;
+function setStatRange(r, el) {
+  statRange = r;
+  document.querySelectorAll('#page-stats .pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderStats();
+}
+function getRangeSessions() {
+  const now = new Date();
+  if (statRange === 'all') return state.sessions.slice();
+  if (statRange === 'month') {
+    return state.sessions.filter(s => {
+      const d = new Date(s.date);
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    });
+  }
+  if (statRange === '30') {
+    const cutoff = new Date(now.getTime() - 30*86400000);
+    return state.sessions.filter(s => new Date(s.date) >= cutoff);
+  }
+  return state.sessions.slice();
+}
+function renderStats() {
+  const sess = getRangeSessions();
+
+  // 趋势图：按日期累计
+  const byDate = {};
+  sess.forEach(s => {
+    const my = s.records.find(r => r.playerId === ME_ID);
+    if (!my) return;
+    byDate[s.date] = (byDate[s.date] || 0) + my.amount;
+  });
+  const dates = Object.keys(byDate).sort();
+  let cumul = 0;
+  const cumData = dates.map(d => { cumul += byDate[d]; return cumul; });
+
+  if (typeof Chart !== 'undefined') {
+    if (trendChart) trendChart.destroy();
+    if (dates.length === 0) {
+      $('trendChart').parentElement.innerHTML = '<div class="empty" style="padding:20px"><span class="emoji">📈</span>暂无数据</div>';
+    } else {
+      trendChart = new Chart($('trendChart'), {
+        type: 'line',
+        data: {
+          labels: dates.map(d => d.slice(5)),
+          datasets: [{
+            label: '累计输赢',
+            data: cumData,
+            borderColor: '#8B0000',
+            backgroundColor: 'rgba(139,0,0,0.1)',
+            tension: 0.3,
+            fill: true,
+            pointRadius: 3,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { ticks: { font: { size: 11 } } },
+            x: { ticks: { font: { size: 10 }, maxRotation: 0 } }
+          }
+        }
+      });
+    }
+  } else {
+    $('trendChart').parentElement.innerHTML = '<div class="empty" style="padding:20px">图表组件加载中…如长时间无显示请联网刷新</div>';
+  }
+
+  // 各方位胜率
+  const posStats = { E:{w:0,t:0,sum:0}, S:{w:0,t:0,sum:0}, W:{w:0,t:0,sum:0}, N:{w:0,t:0,sum:0} };
+  sess.forEach(s => {
+    const my = s.records.find(r => r.playerId === ME_ID);
+    if (!my || !posStats[my.position]) return;
+    posStats[my.position].t++;
+    if (my.amount > 0) posStats[my.position].w++;
+    posStats[my.position].sum += my.amount;
+  });
+
+  if (typeof Chart !== 'undefined') {
+    if (positionChart) positionChart.destroy();
+    const totalGames = posStats.E.t + posStats.S.t + posStats.W.t + posStats.N.t;
+    if (totalGames === 0) {
+      $('positionChart').parentElement.innerHTML = '<div class="empty" style="padding:20px"><span class="emoji">🧭</span>暂无方位数据</div>';
+    } else {
+      positionChart = new Chart($('positionChart'), {
+        type: 'bar',
+        data: {
+          labels: ['东','南','西','北'],
+          datasets: [{
+            label: '胜率%',
+            data: ['E','S','W','N'].map(p => posStats[p].t ? Math.round(posStats[p].w/posStats[p].t*100) : 0),
+            backgroundColor: ['#8B0000','#B22222','#DAA520','#FFD700'],
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                afterBody: (items) => {
+                  const p = ['E','S','W','N'][items[0].dataIndex];
+                  return [`场次：${posStats[p].t}`, `总输赢：${fmtMoney(posStats[p].sum)}`];
+                }
+              }
+            }
+          },
+          scales: {
+            y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } }
+          }
+        }
+      });
+    }
+  } else {
+    // 文本兜底：图表加载失败时仍可看胜率
+    const txt = ['E','S','W','N'].map((p,i) => {
+      const r = posStats[p].t ? Math.round(posStats[p].w/posStats[p].t*100) : 0;
+      return `${['东','南','西','北'][i]} ${r}% (${posStats[p].t}场)`;
+    }).join(' · ');
+    $('positionChart').parentElement.innerHTML = `<div class="empty" style="padding:20px">${txt}</div>`;
+  }
+
+  // 玩家统计
+  const playerStats = {};
+  sess.forEach(s => {
+    const my = s.records.find(r => r.playerId === ME_ID);
+    if (!my) return;
+    s.records.forEach(r => {
+      if (r.playerId === ME_ID) return;
+      if (!playerStats[r.playerId]) playerStats[r.playerId] = { meAmt:0, theirAmt:0, n:0, meWin:0 };
+      playerStats[r.playerId].meAmt += my.amount;
+      playerStats[r.playerId].theirAmt += r.amount;
+      playerStats[r.playerId].n++;
+      if (my.amount > 0) playerStats[r.playerId].meWin++;
+    });
+  });
+  const psHTML = Object.keys(playerStats).map(pid => {
+    const v = playerStats[pid];
+    return `<div class="player-stat-row">
+      <div>
+        <div class="player-stat-name">${getPlayerName(pid)}</div>
+        <div class="player-stat-meta">同桌${v.n}场 · 我胜率${Math.round(v.meWin/v.n*100)}%</div>
+      </div>
+      <div style="text-align:right">
+        <div class="player-stat-value" style="color:${v.meAmt>0?'var(--success)':v.meAmt<0?'var(--danger)':''}">${fmtMoney(v.meAmt)}</div>
+        <div class="player-stat-meta">他${fmtMoney(v.theirAmt)}</div>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty">暂无数据</div>';
+  $('playerStats').innerHTML = psHTML;
+
+  // 上下家分析
+  // 顺序约定：E→S→W→N→E（顺时针），则我的下家是顺时针下一个，上家是上一个
+  const ROT = ['E','S','W','N'];
+  const neighbor = { up:{}, down:{}, opp:{} }; // pid -> {n,sum,wins}
+  sess.forEach(s => {
+    const my = s.records.find(r => r.playerId === ME_ID);
+    if (!my || !my.position) return;
+    const myIdx = ROT.indexOf(my.position);
+    const upPos = ROT[(myIdx+3)%4];
+    const downPos = ROT[(myIdx+1)%4];
+    const oppPos = ROT[(myIdx+2)%4];
+    const up = s.records.find(r => r.position === upPos);
+    const down = s.records.find(r => r.position === downPos);
+    const opp = s.records.find(r => r.position === oppPos);
+    [['up',up],['down',down],['opp',opp]].forEach(([k,r]) => {
+      if (!r) return;
+      if (!neighbor[k][r.playerId]) neighbor[k][r.playerId] = { n:0, sum:0, wins:0 };
+      neighbor[k][r.playerId].n++;
+      neighbor[k][r.playerId].sum += my.amount;
+      if (my.amount > 0) neighbor[k][r.playerId].wins++;
+    });
+  });
+  const labelMap = { up:'上家', down:'下家', opp:'对家' };
+  const nbHTML = Object.keys(labelMap).map(k => {
+    const items = neighbor[k];
+    const rows = Object.keys(items).map(pid => {
+      const v = items[pid];
+      return `<tr><td>${getPlayerName(pid)}</td><td>${v.n}</td><td>${Math.round(v.wins/v.n*100)}%</td><td class="${v.sum>0?'win':v.sum<0?'loss':''}">${fmtMoney(v.sum)}</td></tr>`;
+    }).join('');
+    if (!rows) return '';
+    return `<div style="margin-bottom:14px">
+      <div style="font-weight:600; font-size:14px; margin-bottom:8px">${labelMap[k]}是…</div>
+      <table class="tbl"><thead><tr><th>玩家</th><th>场数</th><th>我胜率</th><th>我累计</th></tr></thead><tbody>${rows}</tbody></table>
+    </div>`;
+  }).join('');
+  $('neighborStats').innerHTML = nbHTML || '<div class="empty">暂无数据</div>';
+}
+
+// ========== 智能推荐 ==========
+let analyzeSelected = [];
+function renderAnalyzePage() {
+  analyzeSelected = [];
+  const grid = $('analyzePlayers');
+  grid.innerHTML = state.players.map(p => {
+    return `<div class="player-chip" onclick="toggleAnalyze('${p.id}', this)">${p.name}</div>`;
+  }).join('') || '<div class="empty">请先在"我的"添加玩家</div>';
+  $('recommendResult').innerHTML = '';
+}
+function toggleAnalyze(pid, el) {
+  const idx = analyzeSelected.indexOf(pid);
+  if (idx >= 0) {
+    analyzeSelected.splice(idx, 1);
+    el.classList.remove('selected');
+  } else {
+    if (analyzeSelected.length >= 3) { showToast('最多选3位对手'); return; }
+    analyzeSelected.push(pid);
+    el.classList.add('selected');
+  }
+}
+function analyzeRecommend() {
+  if (analyzeSelected.length !== 3) {
+    showToast('请选择 3 位对手');
+    return;
+  }
+  // 找出所有"我和这3人同桌"的场次
+  const matched = state.sessions.filter(s => {
+    const ids = s.records.map(r => r.playerId);
+    return analyzeSelected.every(p => ids.includes(p)) && ids.includes(ME_ID);
+  });
+  const result = $('recommendResult');
+  if (matched.length === 0) {
+    result.innerHTML = `<div class="card"><div class="empty"><span class="emoji">🤔</span>历史中你没有和这 3 位完全同桌的记录<br>建议先和他们打几场后再看推荐</div></div>`;
+    return;
+  }
+
+  const posStats = { E:{n:0,w:0,sum:0}, S:{n:0,w:0,sum:0}, W:{n:0,w:0,sum:0}, N:{n:0,w:0,sum:0} };
+  matched.forEach(s => {
+    const my = s.records.find(r => r.playerId === ME_ID);
+    if (!my || !my.position) return;
+    posStats[my.position].n++;
+    posStats[my.position].sum += my.amount;
+    if (my.amount > 0) posStats[my.position].w++;
+  });
+  // 选最佳：先按胜率，胜率相同按平均输赢
+  const ranked = ['E','S','W','N'].map(p => ({
+    pos: p,
+    n: posStats[p].n,
+    rate: posStats[p].n ? posStats[p].w / posStats[p].n : 0,
+    avg: posStats[p].n ? posStats[p].sum / posStats[p].n : 0,
+    sum: posStats[p].sum
+  })).sort((a,b) => {
+    if (a.n === 0 && b.n > 0) return 1;
+    if (b.n === 0 && a.n > 0) return -1;
+    if (b.rate !== a.rate) return b.rate - a.rate;
+    return b.avg - a.avg;
+  });
+  const best = ranked[0];
+  const f = getTodayFortune(new Date());
+  const fortunePos = FORTUNE_DIR_TO_POS[f.fortune];
+  const fortuneIsBest = ['E','S','W','N'].includes(fortunePos) && fortunePos === best.pos;
+
+  result.innerHTML = `
+    <div class="recommend-card">
+      <div class="label">建议你坐</div>
+      <div class="position">${posLabel(best.pos)}</div>
+      <div class="rate">历史胜率 ${Math.round(best.rate*100)}%</div>
+      <div class="meta">基于 ${best.n} 场 · 平均 ${best.avg>=0?'+':''}${best.avg.toFixed(1)} 元${fortuneIsBest?' · 今日财位 ✨':''}</div>
+    </div>
+    <div class="card">
+      <div class="card-title">各方位详情（与这 3 位同桌时）</div>
+      <table class="tbl">
+        <thead><tr><th>位置</th><th>场数</th><th>胜率</th><th>累计</th><th>平均</th></tr></thead>
+        <tbody>${ranked.map(r => `<tr ${r.pos===best.pos?'style="background:#FFFBEA"':''}><td>${posLabel(r.pos)}${FORTUNE_DIR_TO_POS[f.fortune]===r.pos?' ⭐':''}</td><td>${r.n}</td><td>${r.n?Math.round(r.rate*100)+'%':'-'}</td><td class="${r.sum>0?'win':r.sum<0?'loss':''}">${r.n?fmtMoney(r.sum):'-'}</td><td>${r.n?(r.avg>=0?'+':'')+r.avg.toFixed(1):'-'}</td></tr>`).join('')}</tbody>
+      </table>
+      <div class="note">⭐ 表示今日财神方位（${f.fortune}，${f.name}日）</div>
+    </div>
+    <div class="card">
+      <div class="card-title">总览</div>
+      <div class="player-stat-row"><div class="player-stat-name">同桌总场数</div><div class="player-stat-value">${matched.length}</div></div>
+      <div class="player-stat-row"><div class="player-stat-name">总输赢</div><div class="player-stat-value">${fmtMoney(matched.reduce((s,x)=>s+(x.records.find(r=>r.playerId===ME_ID)?.amount||0),0))}</div></div>
+    </div>
+  `;
+}
+
+// ========== 我的（设置） ==========
+function renderMePage() {
+  $('meName').value = state.me.name || '';
+  $('playerCount').textContent = `${state.players.length} 人`;
+  const list = $('playerListSettings');
+  if (state.players.length === 0) {
+    list.innerHTML = '<div class="empty" style="padding:20px">还没有玩家，请先添加</div>';
+  } else {
+    list.innerHTML = state.players.map(p => `
+      <div class="player-row">
+        <div class="player-name">${p.name}</div>
+        <div class="player-actions">
+          <button class="btn btn-secondary" style="padding:6px 12px; font-size:13px" onclick="renamePlayer('${p.id}')">改名</button>
+          <button class="btn btn-danger" style="padding:6px 12px; font-size:13px" onclick="removePlayer('${p.id}')">删除</button>
+        </div>
+      </div>`).join('');
+  }
+  // 干支基准
+  $('ganzhiBaseDate').value = state.ganzhiBase.date;
+  $('ganzhiBaseStem').value = state.ganzhiBase.stemIndex;
+  $('ganzhiBaseBranch').value = state.ganzhiBase.branchIndex;
+}
+function saveMe() {
+  const name = $('meName').value.trim() || '我';
+  state.me.name = name;
+  saveData();
+  showToast('已保存');
+  renderMePage();
+  renderHeader();
+}
+function addPlayer() {
+  const name = $('newPlayerName').value.trim();
+  if (!name) { showToast('请输入姓名'); return; }
+  if (state.players.some(p => p.name === name)) { showToast('已存在同名'); return; }
+  state.players.push({ id: genId(), name });
+  $('newPlayerName').value = '';
+  saveData();
+  renderMePage();
+}
+function renamePlayer(pid) {
+  const p = state.players.find(x => x.id === pid);
+  if (!p) return;
+  const name = prompt('新姓名', p.name);
+  if (!name || !name.trim()) return;
+  p.name = name.trim();
+  saveData();
+  renderMePage();
+}
+function removePlayer(pid) {
+  // 检查是否有历史记录
+  const used = state.sessions.some(s => s.records.some(r => r.playerId === pid));
+  if (used && !confirm('该玩家有历史记录，删除后历史中仍会保留显示该玩家。继续？')) return;
+  if (!used && !confirm('确认删除该玩家？')) return;
+  state.players = state.players.filter(x => x.id !== pid);
+  saveData();
+  renderMePage();
+}
+function saveGanzhiBase() {
+  state.ganzhiBase = {
+    date: $('ganzhiBaseDate').value,
+    stemIndex: parseInt($('ganzhiBaseStem').value),
+    branchIndex: parseInt($('ganzhiBaseBranch').value)
+  };
+  saveData();
+  showToast('已保存校准');
+  renderHeader();
+}
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `麻将记分备份_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('已导出');
+}
+function importData(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const d = JSON.parse(e.target.result);
+      if (!d.players || !d.sessions) throw new Error('格式错误');
+      if (!confirm(`将导入：${d.players.length}个玩家，${d.sessions.length}场记录。这将覆盖当前数据。确认吗？`)) return;
+      state = Object.assign(defaultData(), d);
+      saveData();
+      showToast('已导入');
+      renderHeader();
+      switchTab('home');
+    } catch (err) {
+      alert('导入失败：' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  ev.target.value = '';
+}
+function clearAllData() {
+  if (!confirm('确定清空所有数据？此操作不可恢复！')) return;
+  if (!confirm('再次确认：所有玩家、记录都将删除！')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  state = defaultData();
+  saveData();
+  showToast('已清空');
+  switchTab('home');
+}
+
+// ========== Modal ==========
+function showModal(title, html) {
+  let m = $('modalContainer');
+  if (!m) {
+    m = document.createElement('div');
+    m.className = 'modal';
+    m.id = 'modalContainer';
+    m.onclick = (e) => { if (e.target === m) closeModal(); };
+    document.body.appendChild(m);
+  }
+  m.innerHTML = `<div class="modal-content"><div class="modal-title">${title}</div><div id="modalBody">${html}</div></div>`;
+  m.classList.add('show');
+}
+function closeModal() {
+  const m = $('modalContainer');
+  if (m) m.classList.remove('show');
+}
+
+// ========== 初始化 ==========
+function init() {
+  renderHeader();
+  renderHome();
+  // 默认日期
+  $('recordDate').value = recordState.date;
+}
+init();
+
+// PWA 提示（仅 iOS Safari 第一次）
+if (/iPhone|iPad|iPod/.test(navigator.userAgent) && !window.navigator.standalone) {
+  if (!localStorage.getItem('pwa_hint_shown')) {
+    setTimeout(() => {
+      showToast('点击Safari分享按钮 → 添加到主屏幕');
+      localStorage.setItem('pwa_hint_shown', '1');
+    }, 1500);
+  }
+}
+</script>
+</body>
+</html>
