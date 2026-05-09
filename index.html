@@ -1372,6 +1372,32 @@ function deleteSession(sid) {
 
 // ========== 统计 ==========
 let trendChart = null, positionChart = null;
+
+// 图表辅助：显示空状态时不销毁 canvas，避免后续有数据时无法绘制
+function showChartMsg(canvasId, html) {
+  const canvas = $(canvasId);
+  if (!canvas) return;
+  canvas.style.display = 'none';
+  let msg = canvas.parentNode.querySelector('[data-chart-msg]');
+  if (!msg) {
+    msg = document.createElement('div');
+    msg.dataset.chartMsg = '1';
+    msg.className = 'empty';
+    msg.style.cssText = 'padding:20px;';
+    canvas.parentNode.appendChild(msg);
+  }
+  msg.innerHTML = html;
+  msg.style.display = 'block';
+}
+
+function hideChartMsg(canvasId) {
+  const canvas = $(canvasId);
+  if (!canvas) return;
+  canvas.style.display = 'block';
+  const msg = canvas.parentNode.querySelector('[data-chart-msg]');
+  if (msg) msg.style.display = 'none';
+}
+
 function setStatRange(r, el) {
   statRange = r;
   document.querySelectorAll('#page-stats .pill').forEach(p => p.classList.remove('active'));
@@ -1410,8 +1436,9 @@ function renderStats() {
   if (typeof Chart !== 'undefined') {
     if (trendChart) trendChart.destroy();
     if (dates.length === 0) {
-      $('trendChart').parentElement.innerHTML = '<div class="empty" style="padding:20px"><span class="emoji">📈</span>暂无数据</div>';
+      showChartMsg('trendChart', '<span class="emoji">📈</span>暂无数据');
     } else {
+      hideChartMsg('trendChart');
       trendChart = new Chart($('trendChart'), {
         type: 'line',
         data: {
@@ -1438,7 +1465,7 @@ function renderStats() {
       });
     }
   } else {
-    $('trendChart').parentElement.innerHTML = '<div class="empty" style="padding:20px">图表组件加载中…如长时间无显示请联网刷新</div>';
+    showChartMsg('trendChart', '图表组件加载中…如长时间无显示请联网刷新');
   }
 
   // 各方位胜率
@@ -1455,8 +1482,9 @@ function renderStats() {
     if (positionChart) positionChart.destroy();
     const totalGames = posStats.E.t + posStats.S.t + posStats.W.t + posStats.N.t;
     if (totalGames === 0) {
-      $('positionChart').parentElement.innerHTML = '<div class="empty" style="padding:20px"><span class="emoji">🧭</span>暂无方位数据</div>';
+      showChartMsg('positionChart', '<span class="emoji">🧭</span>暂无方位数据');
     } else {
+      hideChartMsg('positionChart');
       positionChart = new Chart($('positionChart'), {
         type: 'bar',
         data: {
@@ -1494,7 +1522,7 @@ function renderStats() {
       const r = posStats[p].t ? Math.round(posStats[p].w/posStats[p].t*100) : 0;
       return `${['东','南','西','北'][i]} ${r}% (${posStats[p].t}场)`;
     }).join(' · ');
-    $('positionChart').parentElement.innerHTML = `<div class="empty" style="padding:20px">${txt}</div>`;
+    showChartMsg('positionChart', txt);
   }
 
   // 玩家统计
